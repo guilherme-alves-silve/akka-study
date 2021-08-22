@@ -20,7 +20,7 @@ public class Main {
 		System.out.println("Race has been running for " + ((System.currentTimeMillis() - start) / 1000) + " seconds.");
 		System.out.println("    " + new String (new char[DISPLAY_LENGTH]).replace('\0', '='));
 		for (int i = 0; i < 10; i++) {
-			System.out.println(i + " : "  + new String (new char[currentPositions.get(i) * DISPLAY_LENGTH / 100]).replace('\0', '*'));
+			System.out.println(i + " : "  + "*".repeat(currentPositions.get(i) * DISPLAY_LENGTH / 100));
 		}
 	}
 

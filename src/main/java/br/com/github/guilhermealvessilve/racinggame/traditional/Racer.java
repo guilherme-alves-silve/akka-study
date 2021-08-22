@@ -21,7 +21,10 @@ public class Racer implements Runnable{
 	private double currentSpeed = 0;
 	private double currentPosition = 0;
 	
-	public Racer(int id, int raceLength, Map<Integer, Integer> currentPositions, Map<Integer, Long> results) {
+	public Racer(final int id,
+				 final int raceLength,
+				 final Map<Integer, Integer> currentPositions,
+				 final Map<Integer, Long> results) {
 		this.id = id;
 		this.raceLength = raceLength;
 		this.currentPositions = currentPositions;
