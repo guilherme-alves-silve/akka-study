@@ -6,7 +6,7 @@ import java.util.Random;
 /**
  * Code from the course.
  */
-public class Racer implements Runnable{
+public class Racer implements Runnable {
 
 	private static final double DEFAULT_AVERAGE_SPEED = 48.2;
 
