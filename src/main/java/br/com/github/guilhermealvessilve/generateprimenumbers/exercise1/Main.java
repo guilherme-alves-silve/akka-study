@@ -1,4 +1,4 @@
-package br.com.github.guilhermealvessilve.exercise1;
+package br.com.github.guilhermealvessilve.generateprimenumbers.exercise1;
 
 import akka.actor.typed.ActorSystem;
 

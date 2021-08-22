@@ -1,4 +1,4 @@
-package br.com.github.guilhermealvessilve.exercise3;
+package br.com.github.guilhermealvessilve.generateprimenumbers.exercise3;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;

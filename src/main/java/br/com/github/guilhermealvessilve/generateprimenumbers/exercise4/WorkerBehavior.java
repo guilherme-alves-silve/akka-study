@@ -1,4 +1,4 @@
-package br.com.github.guilhermealvessilve.exercise3;
+package br.com.github.guilhermealvessilve.generateprimenumbers.exercise4;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
@@ -9,7 +9,6 @@ import akka.actor.typed.javadsl.Receive;
 
 import java.io.Serializable;
 import java.math.BigInteger;
-import java.util.Objects;
 import java.util.Random;
 
 public class WorkerBehavior extends AbstractBehavior<WorkerBehavior.Command> {
@@ -22,13 +21,19 @@ public class WorkerBehavior extends AbstractBehavior<WorkerBehavior.Command> {
         super(context);
     }
 
+    private BigInteger prime;
+
     @Override
     public Receive<Command> createReceive() {
         return newReceiveBuilder()
                 .onAnyMessage(message -> {
                     if (message.getMessage().equals("start")) {
-                        final var bigInteger = new BigInteger(2000, new Random());
-                        message.getSender().tell(new ManagerBehavior.ResultCommand(bigInteger));
+                        if (null == prime) {
+                            final var bigInteger = new BigInteger(2000, new Random());
+                            prime = bigInteger.nextProbablePrime();
+                        }
+
+                        message.getSender().tell(new ManagerBehavior.ResultCommand(prime));
                     }
 
                     return this;
@@ -44,7 +49,7 @@ public class WorkerBehavior extends AbstractBehavior<WorkerBehavior.Command> {
         private final ActorRef<ManagerBehavior.Command> sender;
 
         public Command(final String message,
-                        final ActorRef<ManagerBehavior.Command> sender) {
+                       final ActorRef<ManagerBehavior.Command> sender) {
             this.message = message;
             this.sender = sender;
         }
