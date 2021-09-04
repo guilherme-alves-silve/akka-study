@@ -46,7 +46,7 @@ class WorkerBehaviorTest {
     }
 
     @Test
-    void shouldMessageMiningFailIfNonceNotInRange() {
+    void shouldReceiveNoMessageMiningFailIfNonceNotInRange() {
         final BehaviorTestKit<WorkerBehavior.Command> testActor = BehaviorTestKit.create(WorkerBehavior.newInstance());
         final TestInbox<HashResult> testInbox = TestInbox.create();
         final var block = BlocksData.getNextBlock(0, "0");
@@ -57,7 +57,7 @@ class WorkerBehaviorTest {
     }
 
     @Test
-    void shouldMessageMiningPassesIfNonceInRange() {
+    void shouldReceiveMessageMiningPassesIfNonceInRange() {
         final BehaviorTestKit<WorkerBehavior.Command> testActor = BehaviorTestKit.create(WorkerBehavior.newInstance(
                 () -> new HashResult(82701, "0000081e9d118bf0827bed8f4a3e142a99a42ef29c8c3d3e24ae2592456c440b")));
         final TestInbox<HashResult> testInbox = TestInbox.create();
