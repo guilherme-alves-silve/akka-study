@@ -1,4 +1,4 @@
-package br.com.github.guilhermealvessilve.racinggame.akka.exercise1;
+package br.com.github.guilhermealvessilve.racinggame.akka.exercise2;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
@@ -12,7 +12,6 @@ import java.time.Duration;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 public class RaceController extends AbstractBehavior<RaceController.Command> {
 
@@ -73,7 +72,7 @@ public class RaceController extends AbstractBehavior<RaceController.Command> {
                 .build();
     }
 
-    private Receive<RaceController.Command> raceCompleteMessageHandler() {
+    private Receive<Command> raceCompleteMessageHandler() {
         return newReceiveBuilder()
                 .onMessage(GetPositionCommand.class, message -> {
                     racerAndCurrentPosition.keySet()
