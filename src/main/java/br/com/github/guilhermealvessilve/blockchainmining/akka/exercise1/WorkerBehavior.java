@@ -1,5 +1,6 @@
 package br.com.github.guilhermealvessilve.blockchainmining.akka.exercise1;
 
+import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.AbstractBehavior;
 import akka.actor.typed.javadsl.ActorContext;
@@ -7,40 +8,38 @@ import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 import br.com.github.guilhermealvessilve.blockchainmining.model.Block;
 import br.com.github.guilhermealvessilve.blockchainmining.model.HashResult;
+import br.com.github.guilhermealvessilve.blockchainmining.utils.BlockChainUtils;
 
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.util.function.Supplier;
 
 public class WorkerBehavior extends AbstractBehavior<WorkerBehavior.Command> {
 
+    private Supplier<HashResult> calculateHashFunction;
+
     private WorkerBehavior(ActorContext<Command> context) {
         super(context);
+    }
+
+    WorkerBehavior(ActorContext<Command> context, Supplier<HashResult> calculateHashFunction) {
+        super(context);
+        this.calculateHashFunction = calculateHashFunction;
     }
 
     @Override
     public Receive<Command> createReceive() {
         return newReceiveBuilder()
                 .onAnyMessage(message -> {
+
                     int difficultyLevel = message.getDifficulty();
                     int startNonce = message.getStartNonce();
                     int endNonce = startNonce + 1000;
-                    final var block = message.getBlock();
-                    var hash = new String(new char[difficultyLevel]).replace("\0", "X");
-                    final var target = new String(new char[difficultyLevel]).replace("\0", "0");
+                    final var hashResult = calculateHashFunction != null
+                            ? calculateHashFunction.get()
+                            : BlockChainUtils.mineBlock(message.getBlock(), difficultyLevel, startNonce, endNonce);
 
-                    int nonce = startNonce;
-                    while (!hash.substring(0,difficultyLevel).equals(target) && nonce < endNonce) {
-                        nonce++;
-                        String dataToEncode = block.getPreviousHash() + block.getTransaction().getTimestamp() + nonce + block.getTransaction();
-                        hash = calculateHash(dataToEncode);
-                    }
-
-                    if (hash.substring(0, difficultyLevel).equals(target)) {
-                        HashResult hashResult = new HashResult();
-                        hashResult.foundAHash(hash, nonce);
-                        //send the hashResult to the caller;
+                    if (hashResult != null) {
+                        message.getController().tell(hashResult);
                         getContext().getLog().debug(String.format("%d : %s", hashResult.getNonce(), hashResult.getHash()));
                         return Behaviors.same();
                     }
@@ -51,34 +50,19 @@ public class WorkerBehavior extends AbstractBehavior<WorkerBehavior.Command> {
                 .build();
     }
 
-    private String calculateHash(String data) {
-        try {
-            final MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            final byte[] rawHash = digest.digest(data.getBytes(StandardCharsets.UTF_8));
-            final var hexString = new StringBuilder();
-            for (final byte hash : rawHash) {
-                final var hex = Integer.toHexString(0xff & hash);
-                if (hex.length() == 1) hexString.append('0');
-                hexString.append(hex);
-            }
-
-            return hexString.toString();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public static class Command implements Serializable {
         private static final long serialVersionUID = 1L;
 
         private final int startNonce;
         private final int difficulty;
         private final Block block;
+        private final ActorRef<HashResult> controller;
 
-        public Command(int startNonce, int difficulty, Block block) {
+        public Command(int startNonce, int difficulty, Block block, ActorRef<HashResult> controller) {
             this.startNonce = startNonce;
             this.difficulty = difficulty;
             this.block = block;
+            this.controller = controller;
         }
 
         public int getStartNonce() {
@@ -92,9 +76,17 @@ public class WorkerBehavior extends AbstractBehavior<WorkerBehavior.Command> {
         public Block getBlock() {
             return block;
         }
+
+        public ActorRef<HashResult> getController() {
+            return controller;
+        }
     }
 
     public static Behavior<Command> newInstance() {
         return Behaviors.setup(WorkerBehavior::new);
+    }
+
+    static Behavior<Command> newInstance(final Supplier<HashResult> calculateHashFunction) {
+        return Behaviors.setup(ctx -> new WorkerBehavior(ctx, calculateHashFunction));
     }
 }

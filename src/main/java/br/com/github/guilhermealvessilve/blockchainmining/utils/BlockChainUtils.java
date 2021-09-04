@@ -19,14 +19,12 @@ public class BlockChainUtils {
 				if (hex.length() == 1) hexString.append('0');
 				hexString.append(hex);
 			}
-
 			return hexString.toString();
 		} catch (NoSuchAlgorithmException e) {
 			throw new RuntimeException(e);
 		} 
 	}
-		
-		
+
 	public static HashResult mineBlock(Block block, int difficultyLevel, int startNonce, int endNonce) {
 		var hash = new String(new char[difficultyLevel]).replace("\0", "X");
 		final var target = new String(new char[difficultyLevel]).replace("\0", "0");
@@ -38,9 +36,7 @@ public class BlockChainUtils {
 			hash = calculateHash(dataToEncode);
 		}
 		if (hash.substring(0,difficultyLevel).equals(target)) {
-			HashResult hashResult = new HashResult();
-			hashResult.foundAHash(hash, nonce);
-			return hashResult;
+			return new HashResult(nonce, hash);
 		}
 
 		return null;
