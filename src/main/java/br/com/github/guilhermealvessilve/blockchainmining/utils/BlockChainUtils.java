@@ -10,7 +10,6 @@ import java.security.NoSuchAlgorithmException;
 public class BlockChainUtils {
 
 	public static String calculateHash(String data) {
-		
 		try {
 			final MessageDigest digest = MessageDigest.getInstance("SHA-256");
 			final byte[] rawHash = digest.digest(data.getBytes(StandardCharsets.UTF_8));
