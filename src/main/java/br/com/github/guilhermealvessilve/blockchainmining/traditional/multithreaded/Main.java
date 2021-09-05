@@ -20,10 +20,10 @@ public class Main {
 		
 		String lastHash = "0";
 		for (int i = 0; i < 10; i++) {
-			ExecutorService es = Executors.newFixedThreadPool(10);	
-			Block nextBlock = BlocksData.getNextBlock(i, lastHash);
-			HashResult hashResult = new HashResult();
-			Thread resultsThread = new Thread(new CheckForResults(hashResult));
+			final ExecutorService es = Executors.newFixedThreadPool(Math.max(10, Runtime.getRuntime().availableProcessors()));
+			final Block nextBlock = BlocksData.getNextBlock(i, lastHash);
+			final HashResult hashResult = new HashResult();
+			final Thread resultsThread = new Thread(new CheckForResults(hashResult));
 			resultsThread.start();
 						
 			for (int nonceSeed = 0; nonceSeed < 10000; nonceSeed++) {
