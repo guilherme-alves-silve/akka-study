@@ -20,7 +20,7 @@ public class BlockMiner implements Runnable {
 	
 	@Override
 	public void run() {
-		HashResult hashResult = BlockChainUtils.mineBlock(block, difficultyLevel, firstNonce, firstNonce + 1000);
+		final HashResult hashResult = BlockChainUtils.mineBlock(block, difficultyLevel, firstNonce, firstNonce * 1000);
 		if (hashResult != null) {
 			this.hashResult.foundAHash(hashResult.getHash(), hashResult.getNonce());
 		}

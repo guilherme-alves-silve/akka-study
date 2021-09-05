@@ -33,7 +33,7 @@ public class WorkerBehavior extends AbstractBehavior<WorkerBehavior.Command> {
 
                     int difficultyLevel = message.getDifficulty();
                     int startNonce = message.getStartNonce();
-                    int endNonce = startNonce + 1000;
+                    int endNonce = startNonce * 1000;
                     final var hashResult = calculateHashFunction != null
                             ? calculateHashFunction.get()
                             : BlockChainUtils.mineBlock(message.getBlock(), difficultyLevel, startNonce, endNonce);

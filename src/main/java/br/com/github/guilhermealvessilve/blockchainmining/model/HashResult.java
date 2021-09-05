@@ -15,6 +15,7 @@ public class HashResult {
 	public HashResult(int nonce, String hash) {
 		this.nonce = nonce;
 		this.hash = hash;
+		this.complete = true;
 	}
 
 	public int getNonce() {

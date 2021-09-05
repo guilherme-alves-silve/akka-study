@@ -11,6 +11,7 @@ import br.com.github.guilhermealvessilve.blockchainmining.model.HashResult;
 import br.com.github.guilhermealvessilve.blockchainmining.utils.BlockChainUtils;
 
 import java.io.Serializable;
+import java.util.Random;
 import java.util.function.Supplier;
 
 public class WorkerBehavior extends AbstractBehavior<WorkerBehavior.Command> {
@@ -34,7 +35,7 @@ public class WorkerBehavior extends AbstractBehavior<WorkerBehavior.Command> {
 
                     int difficultyLevel = message.getDifficulty();
                     int startNonce = message.getStartNonce();
-                    int endNonce = startNonce + 1000;
+                    int endNonce = startNonce * 1000;
                     final var hashResult = calculateHashFunction != null
                             ? calculateHashFunction.get()
                             : BlockChainUtils.mineBlock(message.getBlock(), difficultyLevel, startNonce, endNonce);
@@ -46,7 +47,7 @@ public class WorkerBehavior extends AbstractBehavior<WorkerBehavior.Command> {
                     }
 
                     getContext().getLog().debug("null");
-                    return Behaviors.same();
+                    return Behaviors.stopped();
                 })
                 .build();
     }

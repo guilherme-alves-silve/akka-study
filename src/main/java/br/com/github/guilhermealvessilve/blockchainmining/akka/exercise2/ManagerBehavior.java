@@ -2,6 +2,8 @@ package br.com.github.guilhermealvessilve.blockchainmining.akka.exercise2;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
+import akka.actor.typed.SupervisorStrategy;
+import akka.actor.typed.Terminated;
 import akka.actor.typed.javadsl.AbstractBehavior;
 import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Behaviors;
@@ -21,10 +23,15 @@ public class ManagerBehavior extends AbstractBehavior<ManagerBehavior.Command> {
     @Override
     public Receive<Command> createReceive() {
         return newReceiveBuilder()
+                .onSignal(Terminated.class, handler -> {
+                    startNextWorker();
+                    return Behaviors.same();
+                })
                 .onMessage(MineBlockCommand.class, message -> {
                     this.sender = message.getSender();
                     this.difficulty = message.getDifficulty();
                     this.block = message.getBlock();
+                    this.currentlyMining = true;
 
                     for (int i = 0; i < 10; i++) {
                         startNextWorker();
@@ -33,7 +40,11 @@ public class ManagerBehavior extends AbstractBehavior<ManagerBehavior.Command> {
                     return Behaviors.same();
                 })
                 .onMessage(HashResultCommand.class, message -> {
-
+                    getContext()
+                        .getChildren()
+                        .forEach(getContext()::stop);
+                    this.currentlyMining = false;
+                    sender.tell(message.getHashResult());
                     return Behaviors.same();
                 })
                 .build();
@@ -43,10 +54,22 @@ public class ManagerBehavior extends AbstractBehavior<ManagerBehavior.Command> {
     private Block block;
     private int difficulty;
     private int currentNonce;
+    private boolean currentlyMining;
 
     private void startNextWorker() {
-        final ActorRef<WorkerBehavior.Command> worker = getContext().spawn(WorkerBehavior.newInstance(), "worker-" + currentNonce);
-        worker.tell(new WorkerBehavior.Command(currentNonce + 1000, difficulty, block, getContext().getSelf()));
+        if (!currentlyMining) {
+            getContext().getLog().debug("Won't start more workers, because finished mining...");
+            return;
+        }
+
+        getContext().getLog().info("About to start mining with nonces starting at " + (currentNonce * 1000));
+
+        final Behavior<WorkerBehavior.Command> workerBehavior = Behaviors.supervise(WorkerBehavior.newInstance())
+                .onFailure(SupervisorStrategy.resume());
+
+        final ActorRef<WorkerBehavior.Command> worker = getContext().spawn(workerBehavior, "worker-" + currentNonce);
+        getContext().watch(worker);
+        worker.tell(new WorkerBehavior.Command(currentNonce * 1000, difficulty, block, getContext().getSelf()));
         ++currentNonce;
     }
 

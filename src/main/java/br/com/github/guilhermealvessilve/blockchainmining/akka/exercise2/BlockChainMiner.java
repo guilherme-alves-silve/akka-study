@@ -21,14 +21,14 @@ public class BlockChainMiner {
 	private void mineNextBlock() {
 		int nextBlockId = blocks.getSize();
 		if (nextBlockId < 10) {
-			String lastHash = nextBlockId > 0 ? blocks.getLastHash() : "0";
-			Block block = BlocksData.getNextBlock(nextBlockId, lastHash);
-			CompletionStage<HashResult> results = AskPattern.ask(actorSystem,
+			final String lastHash = nextBlockId > 0 ? blocks.getLastHash() : "0";
+			final Block block = BlocksData.getNextBlock(nextBlockId, lastHash);
+			final CompletionStage<HashResult> results = AskPattern.ask(actorSystem,
 					me -> new ManagerBehavior.MineBlockCommand(difficultyLevel, block, me),
 					Duration.ofSeconds(30),
 					actorSystem.scheduler());
 				
-			results.whenComplete( (reply,failure) -> {
+			results.whenComplete((reply, failure) -> {
 				
 				if (reply == null || reply.isRunning()) {
 					System.out.println("ERROR: No valid hash was found for a block");
@@ -48,8 +48,7 @@ public class BlockChainMiner {
 				}
 			});
 			
-		}
-		else {
+		} else {
 			long end = System.currentTimeMillis();
 			actorSystem.terminate();
 			blocks.printAndValidate();
